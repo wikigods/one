@@ -15,6 +15,14 @@ return new class extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
+//            $table->string('cover')->nullable();
+            $table->string('title')->nullable();
+            $table->string('slug')->unique();
+//            $table->text('excerpt')->nullable();
+//            $table->longText('content')->nullable();
+            //$table->timestamp('published_at')->nullable();
+//            $table->foreignId('category_id')->nullable()->constrained();
+//            $table->foreignId('user_id')->nullable()->constrained();
             $table->timestamps();
         });
     }
