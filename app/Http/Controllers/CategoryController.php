@@ -4,60 +4,49 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\GuardCategoryRequest;
 use App\Models\Category;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class CategoryController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return View
      */
-    public function index()
+    public function index(): View
     {
-        //
-    }
+        $categories = Category::paginate();
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return view('admin.category.index', [
+            'categories' => $categories,
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param GuardCategoryRequest $request
-     * @return \Illuminate\Http\Response
+     * @return RedirectResponse
      */
-    public function store(GuardCategoryRequest $request)
+    public function store(GuardCategoryRequest $request): RedirectResponse
     {
-        //
-    }
+        $category = Category::create($request->validated());
 
-    /**
-     * Display the specified resource.
-     *
-     * @param Category $category
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Category $category)
-    {
-        //
+        return to_route('wg-admin.category.edit', $category)->with('status', __('Created'));
     }
 
     /**
      * Show the form for editing the specified resource.
      *
      * @param Category $category
-     * @return \Illuminate\Http\Response
+     * @return View
      */
-    public function edit(Category $category)
+    public function edit(Category $category): View
     {
-        //
+        return view('admin.category.edit', [
+            'category' => $category,
+        ]);
     }
 
     /**
@@ -65,21 +54,25 @@ class CategoryController extends Controller
      *
      * @param GuardCategoryRequest $request
      * @param Category $category
-     * @return \Illuminate\Http\Response
+     * @return RedirectResponse
      */
-    public function update(GuardCategoryRequest $request, Category $category)
+    public function update(GuardCategoryRequest $request, Category $category): RedirectResponse
     {
-        //
+        $category->update($request->validated());
+
+        return to_route('wg-admin.category.index')->with('status', __('Updated'));
     }
 
     /**
      * Remove the specified resource from storage.
      *
      * @param Category $category
-     * @return \Illuminate\Http\Response
+     * @return RedirectResponse
      */
-    public function destroy(Category $category)
+    public function destroy(Category $category): RedirectResponse
     {
-        //
+        $category->delete();
+
+        return to_route('wg-admin.category.index');
     }
 }

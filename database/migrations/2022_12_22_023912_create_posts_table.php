@@ -21,7 +21,7 @@ return new class extends Migration
 //            $table->text('excerpt')->nullable();
 //            $table->longText('content')->nullable();
             //$table->timestamp('published_at')->nullable();
-//            $table->foreignId('category_id')->nullable()->constrained();
+            $table->foreignId('category_id')->nullable()->constrained('category');
 //            $table->foreignId('user_id')->nullable()->constrained();
             $table->timestamps();
         });

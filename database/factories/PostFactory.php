@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,9 @@ class PostFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'title' => $title = fake()->sentence(1),
+            'slug' => str()->slug($title),
+            'category_id' => Category::all()->random()
         ];
     }
 }

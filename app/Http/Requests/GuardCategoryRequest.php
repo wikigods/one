@@ -11,9 +11,9 @@ class GuardCategoryRequest extends FormRequest
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,8 @@ class GuardCategoryRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'title' => '',
+            'slug' => '',
         ];
     }
 }
