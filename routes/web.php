@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,6 +24,8 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::middleware('auth')->prefix('wg-admin')->group(function (){
+    Route::resource('posts', PostController::class)
+        ->names('wg-admin.posts');
     Route::resource('category', CategoryController::class)
         ->names('wg-admin.category')->except('create','show');
 });

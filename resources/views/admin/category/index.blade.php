@@ -1,3 +1,1 @@
-@foreach ($categories as $category)
-    {{ $category->title }}
-@endforeach
+@extends('layouts.app')

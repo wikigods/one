@@ -1,1 +1,1 @@
-{{ $category->id }}
+{{--{{ $category->id }}--}}
