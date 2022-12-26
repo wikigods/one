@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Post;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PostManagerTest extends TestCase
@@ -62,22 +64,40 @@ class PostManagerTest extends TestCase
     /** * @test */
     public function admin_posts_store()
     {
+        Storage::fake('public');
+        $cover = UploadedFile::fake()->image('cover.jpg');
+        $category = Category::factory()->create();
+
         $response = $this->actingAs($this->user)->post(route('wg-admin.posts.store'), [
+            'cover' => $cover,
             'title' => 'New Post',
             'slug' => 'new-post',
-            'category_id' => 1
+            'excerpt' => 'New Excerpt',
+            'content' => 'New Content',
+            'published_at' => '12/25/2022',
+            'user_id' => $this->user->id,
+            'category_id' => $category->id
         ]);
 
         $post = Post::first();
 
-        $response->assertRedirect(route('wg-admin.posts.edit', $post));
-        $response->assertSessionHas('status', __('Created'));
+        $response->assertRedirect(route('wg-admin.posts.index'));
+        $response->assertSessionHas('success', __('Created'));
 
         $this->assertDatabaseHas('posts', [
+            'cover' => $coverPath  = Storage::disk('public')->files()[0],
             'title' => 'New Post',
             'slug' => 'new-post',
-            'category_id' => 1
+            'excerpt' => 'New Excerpt',
+            'content' => 'New Content',
+            'published_at' => '2022-12-25 00:00:00',
+            'user_id' => $this->user->id,
+            'category_id' => $category->id
         ]);
+
+        $this->assertInstanceOf(Carbon::class, $post->published_at);
+        $this->assertEquals('12/25/2022', $post->published_at->format('m/d/Y'));
+        Storage::disk('public')->assertExists($coverPath);
     }
 
     /** * @test */
@@ -121,7 +141,7 @@ class PostManagerTest extends TestCase
         ]);
 
         $response->assertRedirect(route('wg-admin.posts.index'));
-        $response->assertSessionHas('status', __('Updated'));
+        $response->assertSessionHas('success', __('Updated'));
 
         $this->assertDatabaseHas('posts', [
             'title' => 'Edit Post',
@@ -133,11 +153,77 @@ class PostManagerTest extends TestCase
     /** * @test */
     public function admin_posts_delete()
     {
-        $post = Post::factory()->create();
+        Storage::fake('public');
+        $cover = UploadedFile::fake()->image('cover.jpg')->store('/');
+
+        $post = Post::factory()->create([
+            'cover' => $cover
+        ]);
 
         $response = $this->actingAs($this->user)->delete(route('wg-admin.posts.destroy', $post));
 
         $response->assertRedirect(route('wg-admin.posts.index'));
+        $response->assertSessionHas('success', __('Deleted'));
+        Storage::disk('public')->assertMissing($cover);
         $this->assertModelMissing($post);
+
+    }
+
+    //validation
+    /** * @test */
+    public function admin_posts_cover_required()
+    {
+        $category = Category::factory()->create();
+
+        $response = $this->actingAs($this->user)->post(route('wg-admin.posts.store'), [
+            'cover' => '',
+            'title' => 'New Post',
+            'slug' => 'new-post',
+            'excerpt' => 'New Excerpt',
+            'content' => 'New Content',
+            'published_at' => '12/25/2022',
+            'user_id' => $this->user->id,
+            'category_id' => $category->id
+        ]);
+
+        $response->assertSessionHasErrors('cover');
+    }
+
+    /** * @test */
+    public function admin_posts_slug_required()
+    {
+        $category = Category::factory()->create();
+
+        $response = $this->actingAs($this->user)->post(route('wg-admin.posts.store'), [
+            'cover' => 'aa',
+            'title' => 'New Post',
+            'slug' => null,
+            'excerpt' => 'New Excerpt',
+            'content' => 'New Content',
+            'published_at' => '12/25/2022',
+            'user_id' => $this->user->id,
+            'category_id' => $category->id
+        ]);
+
+        $response->assertSessionHasErrors('slug');
+    }
+
+    /** * @test */
+    public function admin_posts_slug_unique()
+    {
+        $category = Category::factory()->create();
+        $post = Post::factory()->create();
+        $response = $this->actingAs($this->user)->post(route('wg-admin.posts.store'), [
+            'cover' => 'aa',
+            'title' => 'New Post',
+            'slug' => $post->slug,
+            'excerpt' => 'New Excerpt',
+            'content' => 'New Content',
+            'published_at' => '12/25/2022',
+            'user_id' => $this->user->id,
+            'category_id' => $category->id
+        ]);
+
+        $response->assertSessionHasErrors('slug');
     }
 }

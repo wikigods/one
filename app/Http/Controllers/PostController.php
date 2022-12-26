@@ -6,6 +6,7 @@ use App\Http\Requests\GuardPostRequest;
 use App\Models\Category;
 use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class PostController extends Controller
@@ -48,11 +49,12 @@ class PostController extends Controller
      */
     public function store(GuardPostRequest $request): RedirectResponse
     {
-        $input = $request->validated();
-        //$input['cover'] = $request->file('cover')->store('posts');
-        $post = Post::create($input);
+        $post = new Post($request->validated());
+        $post->cover = $request->file('cover')->store('/');
+        $post->user_id = auth()->user()->id;
+        $post->save();
 
-        return to_route('wg-admin.posts.edit', $post)->with('status', __('Created'));
+        return to_route('wg-admin.posts.index')->with('success', __('Created'));
     }
 
     /**
@@ -95,7 +97,7 @@ class PostController extends Controller
     {
         $post->update($request->validated());
 
-        return to_route('wg-admin.posts.index')->with('status', __('Updated'));
+        return to_route('wg-admin.posts.index')->with('success', __('Updated'));
     }
 
     /**
@@ -106,8 +108,10 @@ class PostController extends Controller
      */
     public function destroy(Post $post): RedirectResponse
     {
+        Storage::delete($post->cover);
+
         $post->delete();
 
-        return to_route('wg-admin.posts.index')->with('status', __('Updated'));
+        return to_route('wg-admin.posts.index')->with('success', __('Deleted'));
     }
 }

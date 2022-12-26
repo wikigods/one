@@ -18,9 +18,13 @@ class PostFactory extends Factory
     public function definition()
     {
         return [
+            'cover' => null,
             'title' => $title = fake()->sentence(1),
             'slug' => str()->slug($title),
-            'category_id' => Category::all()->random()
+            'excerpt'=> fake()->paragraph(),
+            'content'=> fake()->paragraph(),
+            'published_at' => null,
+            'category_id' => Category::factory()
         ];
     }
 }

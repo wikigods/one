@@ -6,6 +6,8 @@ use App\Models\Category;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class CategoryManagerTest extends TestCase
@@ -53,9 +55,9 @@ class CategoryManagerTest extends TestCase
 
         $category = Category::first();
 
-        $response->assertRedirect(route('wg-admin.category.edit', $category));
-        $response->assertSessionHas('status', __('Created'));
 
+        $response->assertSessionHas('status', __('Created'));
+        $response->assertRedirect(route('wg-admin.category.edit', $category));
         $this->assertDatabaseHas('category', [
             'title' => 'New Category',
             'slug' => 'new-category',
@@ -70,7 +72,7 @@ class CategoryManagerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('wg-admin.category.edit', $category));
 
         $category = Category::first();
-
+dd($category);
         $response->assertViewIs('admin.category.edit');
         $response->assertViewHas('category', $category);
         $this->assertDatabaseCount('category', 1);

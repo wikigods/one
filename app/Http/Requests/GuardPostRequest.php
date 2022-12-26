@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class GuardPostRequest extends FormRequest
 {
@@ -24,8 +25,16 @@ class GuardPostRequest extends FormRequest
     public function rules()
     {
         return [
+            'cover'=> 'required',
             'title' => '',
-            'slug' => '',
+            'slug' => [
+                'required',
+                //Rule::unique('posts')->ignore( $this->route('post') )
+            ],
+            'excerpt' => '',
+            'content' => '',
+            'published_at' => '',
+            'user_id' => '',
             'category_id' => '',
         ];
     }
